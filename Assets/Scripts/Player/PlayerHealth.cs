@@ -1,8 +1,14 @@
 using System;
 using UnityEngine;
 
+// OOP - ENCAPSULATION:
+// PlayerHealth hides health logic. External classes call TakeDamage() — they never
+// directly modify the health value.
+// DESIGN PATTERN - OBSERVER:
+// Fires OnHealthChanged and OnHeartLost so UIManager can react without being coupled here.
 public class PlayerHealth : MonoBehaviour
 {
+    // OBSERVER: broadcast health changes and heart-lost notifications
     public static event Action<int, int> OnHealthChanged;
     public static event Action OnHeartLost;
 
@@ -19,15 +25,17 @@ public class PlayerHealth : MonoBehaviour
         OnHealthChanged?.Invoke(health, maxHealth);
     }
 
+    // OOP - ENCAPSULATION: damage logic and cooldown are managed internally
     public void TakeDamage(int amount)
     {
         if (Time.time - lastDamageTime < damageCooldown) return;
         lastDamageTime = Time.time;
 
         health = Mathf.Max(0, health - amount);
+
+        // OBSERVER: notify UI to update health display and show notification
         OnHealthChanged?.Invoke(health, maxHealth);
         OnHeartLost?.Invoke();
-        Debug.Log("Player HP: " + health);
 
         if (health <= 0)
             Die();
@@ -35,14 +43,12 @@ public class PlayerHealth : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other.CompareTag("Enemy"))
-            TakeDamage(1);
+        if (other.CompareTag("Enemy")) TakeDamage(1);
     }
 
     private void OnCollisionEnter(Collision collision)
     {
-        if (collision.gameObject.CompareTag("Enemy"))
-            TakeDamage(1);
+        if (collision.gameObject.CompareTag("Enemy")) TakeDamage(1);
     }
 
     private void Die()

@@ -1,6 +1,9 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 
+// OOP - INHERITANCE:
+// Player extends Character, inheriting the speed field and overriding Move().
+// This avoids duplicating shared logic and keeps the class focused on player-specific behaviour.
 [RequireComponent(typeof(Rigidbody))]
 public class Player : Character
 {
@@ -19,6 +22,8 @@ public class Player : Character
         rb.linearDamping = 8f;
     }
 
+    // OOP - POLYMORPHISM:
+    // Overrides Character.Move() with player-specific keyboard input logic.
     public override void Move()
     {
         if (Keyboard.current == null) return;
@@ -39,7 +44,7 @@ public class Player : Character
 
     void FixedUpdate()
     {
-        // Apply force instead of setting velocity — feels natural and smooth
+        // Apply force for smooth physics-based movement
         rb.AddForce(moveDirection * acceleration, ForceMode.VelocityChange);
 
         // Clamp horizontal speed so player doesn't accelerate forever
@@ -58,16 +63,14 @@ public class Player : Character
         }
     }
 
-    private void OnCollisionStay(Collision collision)
-    {
-        isGrounded = true;
-    }
+    private void OnCollisionStay(Collision collision) { isGrounded = true; }
+    private void OnCollisionExit(Collision collision) { isGrounded = false; }
 
-    private void OnCollisionExit(Collision collision)
-    {
-        isGrounded = false;
-    }
-
+    // ALGORITHM 1 - LINEAR SEARCH (Nearest Enemy):
+    // Problem: The player needs to identify the closest enemy in the scene.
+    // Approach: Iterate through all Enemy instances, track the minimum distance found.
+    // Time Complexity: O(n) where n = number of enemies.
+    // This is optimal for an unsorted, dynamic set of game objects.
     public Enemy FindNearestEnemy()
     {
         Enemy[] enemies = FindObjectsByType<Enemy>(FindObjectsSortMode.None);
